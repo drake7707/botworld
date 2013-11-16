@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AIBots.AbstractBot&lt;W, S&gt;">
+    <Position X="9" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAQggAAAABAAAAAAAAAEAACAAACAAAAAiAAAAAUBABA=</HashCode>
+      <FileName>Core\AbstractBot.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Network" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="AIBots.BotWorld.Bot">
+    <Position X="9" Y="5.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AQQgAAAAAAAAgSggAEAAAAGBAgAAAAAAAAAAAAFBAEI=</HashCode>
+      <FileName>BotWorld\Bot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.BotWorld.Food">
+    <Position X="4" Y="10.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAgAAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BotWorld\Food.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.GeneticEvolution&lt;T&gt;">
+    <Position X="15.5" Y="1" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAEAgAAAAIAAAAAAAAEACAAAAAAAACEAIAABA=</HashCode>
+      <FileName>Core\GeneticEvolution.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="History" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AIBots.GeneticHistory">
+    <Position X="12.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAAAAAACAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Core\GeneticEvolution.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.BotWorld.Mine">
+    <Position X="6" Y="10.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAgAAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BotWorld\Mine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.NeuralNetwork">
+    <Position X="6.25" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="AIBots.NeuralNetwork.NeuralLayer" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Core\NeuralNetwork.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Struct Name="AIBots.NeuralNetwork.Neuron" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Core\NeuralNetwork.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>IAAiAAAAAAAgAQEAAAAAAAAAACAAAhAAAAAEBkAEAAA=</HashCode>
+      <FileName>Core\NeuralNetwork.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.BotWorld.Settings">
+    <Position X="3" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAwIAAAAAAAAAAAAIAAAAAAAAAAAAAAAgAAAAAAAA=</HashCode>
+      <FileName>BotWorld\Settings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.BotWorld.World">
+    <Position X="6" Y="5.5" Width="1.5" />
+    <AssociationLine Name="Food" Type="AIBots.BotWorld.Food" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.344" Y="10.199" />
+        <Point X="6.344" Y="10.5" />
+        <Point X="4.75" Y="10.5" />
+        <Point X="4.75" Y="10.75" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAQIABAAAAAACwAAQCAAggDAAAEAAAAAgAYCAgAABAE=</HashCode>
+      <FileName>BotWorld\World.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Settings" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="Bots" />
+      <Property Name="Mines" />
+      <Property Name="Food" />
+      <Property Name="Particles" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="AIBots.BotWorld.WorldParticle">
+    <Position X="3" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAABAEA=</HashCode>
+      <FileName>BotWorld\WorldParticle.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AIBots.Controller&lt;World, Bot, S&gt;">
+    <Position X="15.5" Y="5.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAADAABAACAAAAAAAAAAAAAAABoAAAAAAAAIA=</HashCode>
+      <FileName>Core\Controller.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="GeneticController" />
+    </ShowAsAssociation>
+  </Class>
+  <Interface Name="AIBots.IGenetic">
+    <Position X="12.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>Core\GeneticEvolution.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="AIBots.IWorld&lt;Bot, Settings&gt;">
+    <Position X="3" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAwAAQAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\IWorld.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
