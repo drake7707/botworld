@@ -44,6 +44,7 @@ namespace AIBots.HarvestWorld
             RectangleF baseAreaWithPadding = new RectangleF(BaseArea.Location, BaseArea.Size);
             baseAreaWithPadding.Inflate(0.2f, 0.2f);
 
+            int attempts = 0;
             for (int i = 0; i < Settings.NrOfCrystals; i++)
             {
                 Crystal c = new Crystal(this);
@@ -57,10 +58,11 @@ namespace AIBots.HarvestWorld
                                                                        c.Position.Y - Settings.CrystalAreaY / 2f,
                                                                        c.Position.X + Settings.CrystalAreaX / 2f,
                                                                        c.Position.Y + Settings.CrystalAreaY / 2f);
+                    attempts++;
+                } while (baseAreaWithPadding.IntersectsWith(crystalRect) && attempts < 100);
 
-                } while (baseAreaWithPadding.IntersectsWith(crystalRect));
-
-                Crystals.Add(c);
+                if (attempts < 100)
+                    Crystals.Add(c);
             }
 
 

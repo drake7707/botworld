@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace AIBots
 {
@@ -77,7 +78,17 @@ namespace AIBots
                 for (int i = 0; i < layer.Neurons.Length; i++)
                 {
                     float sum = layer.Neurons[i].Sum(bias, currentValues);
-                    float outputValue = Sigmoid(sum);
+
+                    // calculate the sigmoid inline to prevent call overhead
+                    // and use a lookup table
+                    // it's ~x100 faster
+                    float outputValue;
+                    if (sum >= 10) outputValue = 1;
+                    else if (sum < -10) outputValue = 0;
+                    else outputValue = sigmoidLookup[SIGMOID_LOOKUP_OFFSET + (int)(sum * SIGMOID_FRACTION)];
+                    //        outputValue = Sigmoid(sum);
+
+                    
                     output[i] = outputValue;
                 }
                 currentValues = output;
@@ -97,22 +108,28 @@ namespace AIBots
             float[][] deltas = new float[NrOfHiddenLayers + 1][];
 
             deltas[layers.Length - 1] = new float[NrOfOutputs];
+            var lastLayer = deltas[layers.Length - 1];
+            var outputValues = values[outputIndex];
             for (int i = 0; i < NrOfOutputs; i++)
-                deltas[layers.Length - 1][i] = expectedOutput[i] - values[outputIndex][i];
-
+                lastLayer[i] = expectedOutput[i] - outputValues[i];
 
             for (int layerIdx = layers.Length - 2; layerIdx >= 0; layerIdx--)
             {
                 var layer = layers[layerIdx];
                 deltas[layerIdx] = new float[layer.Neurons.Length];
 
-                for (int j = 0; j < layer.Neurons.Length; j++)
+                var nextLayer = layers[layerIdx + 1];
+                var nrOfNeuronsInNextLayer = nextLayer.Neurons.Length;
+                var deltasOfNextLayer = deltas[layerIdx + 1];
+                var deltasOfCurrentLayer = deltas[layerIdx];
+                var nrOfNeuronsInLayer = layer.Neurons.Length;
+                for (int j = 0; j < nrOfNeuronsInLayer; j++)
                 {
                     float deltaSum = 0;
-                    for (int k = 0; k < layers[layerIdx + 1].Neurons.Length; k++)
-                        deltaSum += layers[layerIdx + 1].Neurons[k].NeuronWeights[j] * deltas[layerIdx+1][k];
+                    for (int k = 0; k < nrOfNeuronsInNextLayer; k++)
+                        deltaSum += nextLayer.Neurons[k].NeuronWeights[j] * deltasOfNextLayer[k];
 
-                    deltas[layerIdx][j] = deltaSum;
+                    deltasOfCurrentLayer[j] = deltaSum;
                 }
             }
 
@@ -120,31 +137,95 @@ namespace AIBots
             for (int layerIdx = 0; layerIdx < layers.Length; layerIdx++)
             {
                 var layer = layers[layerIdx];
-                for (int neuronIdx = 0; neuronIdx < layer.Neurons.Length; neuronIdx++)
+                var valuesOfNextLayer = values[layerIdx + 1];
+                // value array from inputs of current layer
+                float[] valuesOfInputForLayer = values[layerIdx];
+                var deltasOfCurrentLayer = deltas[layerIdx];
+                var nrOfNeuronsInLayer = layer.Neurons.Length;
+                for (int neuronIdx = 0; neuronIdx < nrOfNeuronsInLayer; neuronIdx++)
                 {
-                    // dSigmoid = value * (1 - value)
+                    // dSigmoid = value * (1 - value) (partial derivatives components of the gradient)
                     // value = the output of the current neuron
                     // dValue = the derivative of the value
-                    float dValue = values[layerIdx + 1][neuronIdx] * (1 - values[layerIdx + 1][neuronIdx]);
-
-                    // value array from inputs of current layer
-                    float[] valuesOfInputForLayer = values[layerIdx];
+                    var valueOfNextLayerOfNeuron = valuesOfNextLayer[neuronIdx];
+                    float dValue = valueOfNextLayerOfNeuron * (1 - valueOfNextLayerOfNeuron);
 
                     // delta of current neuron
-                    float delta = deltas[layerIdx][neuronIdx];
+                    float delta = deltasOfCurrentLayer[neuronIdx];
 
                     var neuron = layer.Neurons[neuronIdx];
-                    for (int k = 0; k < neuron.NeuronWeights.Length; k++)
+                    var nrOfWeightsOfNeuron = neuron.NeuronWeights.Length;
+                    for (int k = 0; k < nrOfWeightsOfNeuron; k++)
                     {
                         // http://home.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html
                         float newWeight = neuron.NeuronWeights[k] + learningRate * delta * dValue * valuesOfInputForLayer[k];
-                        if (newWeight > 1) newWeight = 1;
-                        if (newWeight < -1) newWeight = -1;
+                        //if (newWeight > 1) newWeight = 1;
+                        //if (newWeight < -1) newWeight = -1;
                         neuron.NeuronWeights[k] = newWeight;
                     }
                 }
             }
         }
+
+        //public void Train(float[] input, float[] expectedOutput, float learningRate)
+        //{
+
+        //    //int inputIndex = 0;
+        //    int outputIndex = NrOfHiddenLayers + 1;
+
+        //    float[][] values = CalculateActivationPerNeuron(input);
+
+        //    float[][] deltas = new float[NrOfHiddenLayers + 1][];
+
+        //    deltas[layers.Length - 1] = new float[NrOfOutputs];
+        //    for (int i = 0; i < NrOfOutputs; i++)
+        //        deltas[layers.Length - 1][i] = expectedOutput[i] - values[outputIndex][i];
+
+
+        //    for (int layerIdx = layers.Length - 2; layerIdx >= 0; layerIdx--)
+        //    {
+        //        var layer = layers[layerIdx];
+        //        deltas[layerIdx] = new float[layer.Neurons.Length];
+
+        //        for (int j = 0; j < layer.Neurons.Length; j++)
+        //        {
+        //            float deltaSum = 0;
+        //            for (int k = 0; k < layers[layerIdx + 1].Neurons.Length; k++)
+        //                deltaSum += layers[layerIdx + 1].Neurons[k].NeuronWeights[j] * deltas[layerIdx+1][k];
+
+        //            deltas[layerIdx][j] = deltaSum;
+        //        }
+        //    }
+
+        //    // apply weights
+        //    for (int layerIdx = 0; layerIdx < layers.Length; layerIdx++)
+        //    {
+        //        var layer = layers[layerIdx];
+        //        for (int neuronIdx = 0; neuronIdx < layer.Neurons.Length; neuronIdx++)
+        //        {
+        //            // dSigmoid = value * (1 - value)
+        //            // value = the output of the current neuron
+        //            // dValue = the derivative of the value
+        //            float dValue = values[layerIdx + 1][neuronIdx] * (1 - values[layerIdx + 1][neuronIdx]);
+
+        //            // value array from inputs of current layer
+        //            float[] valuesOfInputForLayer = values[layerIdx];
+
+        //            // delta of current neuron
+        //            float delta = deltas[layerIdx][neuronIdx];
+
+        //            var neuron = layer.Neurons[neuronIdx];
+        //            for (int k = 0; k < neuron.NeuronWeights.Length; k++)
+        //            {
+        //                // http://home.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html
+        //                float newWeight = neuron.NeuronWeights[k] + learningRate * delta * dValue * valuesOfInputForLayer[k];
+        //                //if (newWeight > 1) newWeight = 1;
+        //                //if (newWeight < -1) newWeight = -1;
+        //                neuron.NeuronWeights[k] = newWeight;
+        //            }
+        //        }
+        //    }
+        //}
 
         public float[][] CalculateActivationPerNeuron(float[] input)
         {
@@ -160,7 +241,13 @@ namespace AIBots
                 for (int j = 0; j < layer.Neurons.Length; j++)
                 {
                     float sum = layer.Neurons[j].Sum(bias, currentValues);
-                    float outputValue = Sigmoid(sum);
+
+                    //float outputValue = Sigmoid(sum);
+                    float outputValue;
+                    if (sum >= 10) outputValue = 1;
+                    else if (sum < -10) outputValue = 0;
+                    else outputValue = sigmoidLookup[10000 + (int)(sum * SIGMOID_FRACTION)];
+
                     output[j] = outputValue;
                 }
                 currentValues = output;
@@ -169,6 +256,63 @@ namespace AIBots
 
             return values;
         }
+
+
+        private const int SIGMOID_LOOKUP_OFFSET = 10000;
+        private const int SIGMOID_LOOKUP_SIZE = 20000;
+        private const int SIGMOID_FRACTION = 1000;
+        private static float[] sigmoidLookup;
+        static NeuralNetwork()
+        {
+            sigmoidLookup = new float[SIGMOID_LOOKUP_SIZE];
+
+            for (int i = -10 * SIGMOID_FRACTION; i < 10 * SIGMOID_FRACTION; i++)
+            {
+                float val = (float)i / SIGMOID_FRACTION;
+                sigmoidLookup[SIGMOID_LOOKUP_OFFSET + i] = (float)(1 / (1 + Math.Pow(Math.E, -val)));
+            }
+
+            /*
+             * double sumDiff = 0;
+            for (float i = -10; i < 10; i += 0.001f)
+            {
+                sumDiff += Math.Abs(Sigmoid(i) - (float)(1 / (1 + Math.Pow(Math.E, -i))));
+            }
+            Console.WriteLine("Total diff: " + sumDiff);
+            */
+
+        }
+
+        //private static void RunThisIfYouDoubtInliningSigmoidIsNotWorthIt()
+        //{
+        //    Stopwatch w = new Stopwatch();
+        //    w.Start();
+        //    float value = 0;
+        //    for (long i = 0; i < 10000000; i++)
+        //    {
+        //        value = (float)(1 / (1 + Exp(-1.25f)));
+        //    }
+        //    w.Stop();
+
+
+        //    Stopwatch w2 = new Stopwatch();
+        //    w2.Start();
+
+        //    for (long i = 0; i < 10000000; i++)
+        //    {
+        //        //value = Sigmoid(-1.25f);
+        //        if (test > 10)
+        //            value = 1;
+        //        else if (test < -10)
+        //            value = 0;
+        //        else
+        //            value = sigmoidLookup[10000 + (int)(test * SIGMOID_FRACTION)];
+        //    }
+        //    w2.Stop();
+        //    Console.WriteLine("v" + value);
+        //    Console.WriteLine(w.ElapsedMilliseconds + " " + w2.ElapsedMilliseconds);
+        //}
+        //static float test = -1.25f;
 
         private static float Sigmoid(float input)
         {
