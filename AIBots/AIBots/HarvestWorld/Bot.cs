@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace AIBots.HarvestWorld
 {
@@ -74,7 +75,31 @@ namespace AIBots.HarvestWorld
             if (Settings.TrainBots)
             {
                 float[] expectedOutput = GetExpectedOutput(nearCrystal, isInsideBaseRegion, ref toCrystal, ref toBaseCenter);
-                Network.Train(input, expectedOutput, Settings.LearningRate);
+
+                Network.Train(input, expectedOutput, Settings.LearningRate);    
+                /*
+                var n1 = new NeuralNetwork(Network.NrOfInputs, Network.NrOfOutputs, Network.NrOfHiddenLayers, Network.NrOfNeuronsPerHiddenLayer, Settings.Bias, Network.GetAllWeights());
+                var n2 = new NeuralNetwork(Network.NrOfInputs, Network.NrOfOutputs, Network.NrOfHiddenLayers, Network.NrOfNeuronsPerHiddenLayer, Settings.Bias, Network.GetAllWeights()); 
+
+                Stopwatch w = new Stopwatch();
+                w.Start();
+                for (int i = 0; i < 100000; i++)
+                {
+                    n1.Train(input, expectedOutput, Settings.LearningRate);    
+                }
+                w.Stop();
+
+                
+                Stopwatch w2 = new Stopwatch();
+                w2.Start();
+                for (int i = 0; i < 100000; i++)
+                {
+                    n2.TrainOptimized(input, expectedOutput, Settings.LearningRate);
+                }
+                w2.Stop();
+                
+                Console.WriteLine(w.ElapsedMilliseconds + " " + w2.ElapsedMilliseconds);
+                 */
                 //Network.Train(input, expectedOutput, Settings.LearningRate);
 
                 // lets see if expected is correct
@@ -82,7 +107,7 @@ namespace AIBots.HarvestWorld
                 //output = expectedOutput;
 
             }
-         
+
             float vX = Settings.MaxBotSpeed * (output[0] * 2 - 1f);
             float vY = Settings.MaxBotSpeed * (output[1] * 2 - 1f);
             bool takeCrystal = output[2] > 0.5f;
@@ -107,7 +132,7 @@ namespace AIBots.HarvestWorld
             }
             else if (nearCrystal != null && nearCrystal.Value > 0 && !CarryingCrystal && takeCrystal)
             {
-                   Score+=1;
+                Score += 1;
                 CarryingCrystal = true;
                 nearCrystal.Value--;
             }
@@ -171,7 +196,7 @@ namespace AIBots.HarvestWorld
         {
             nearCrystal = World.IsInAreaOfCrystal(this);
             isInsideBaseRegion = World.IsInsideBaseRegion(this);
-          
+
             int crystalIdx = World.GetClosestCrystalIndexThatHasValue(this.Position, out distanceToCrystal);
             Crystal c;
             if (crystalIdx == -1)
@@ -212,19 +237,22 @@ namespace AIBots.HarvestWorld
 
             int crystalIdx = World.GetClosestCrystalIndexThatHasValue(Position, out distanceToCrystal);
 
-            GetInput(out nearCrystal, out isInsideBaseRegion, out toCrystal, out distanceToCrystal, out toBaseCenter, out distanceToBase, out input);
+            if (crystalIdx != -1)
+            {
+                GetInput(out nearCrystal, out isInsideBaseRegion, out toCrystal, out distanceToCrystal, out toBaseCenter, out distanceToBase, out input);
 
-            Crystal c = World.Crystals[crystalIdx];
+                Crystal c = World.Crystals[crystalIdx];
 
 
-            PointF picPosBot = new PointF(Position.X * w, Position.Y * h);
-            PointF picPosCrystal = new PointF(c.Position.X * w, c.Position.Y * h);
+                PointF picPosBot = new PointF(Position.X * w, Position.Y * h);
+                PointF picPosCrystal = new PointF(c.Position.X * w, c.Position.Y * h);
 
-            PointF picPosBaseCenter = new PointF((World.BaseArea.Left + World.BaseArea.Width / 2) * w,
-                                                 (World.BaseArea.Top + World.BaseArea.Height / 2) * h);
-            g.DrawLine(Pens.SkyBlue, picPosBot, picPosCrystal);
+                PointF picPosBaseCenter = new PointF((World.BaseArea.Left + World.BaseArea.Width / 2) * w,
+                                                     (World.BaseArea.Top + World.BaseArea.Height / 2) * h);
+                g.DrawLine(Pens.SkyBlue, picPosBot, picPosCrystal);
 
-            g.DrawLine(Pens.Salmon, picPosBot, picPosBaseCenter);
+                g.DrawLine(Pens.Salmon, picPosBot, picPosBaseCenter);
+            }
         }
 
     }
